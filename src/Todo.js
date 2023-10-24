@@ -25,8 +25,8 @@ export default function Todo ({ title, description, author }) {
         <br />
 
         <div>
-            <input type="checkbox" id="completedBox" name="completedBox" onChange={updateCompleted}/>
-            <label for="completedBox">Completed</label>
+            <input type="checkbox" id="completedBox" name="completedBox" onClick={updateCompleted}/>
+            <label htmlFor="completedBox">Completed</label>
         </div>
 
         <i>Created by <b>{author}</b></i>
