@@ -1,7 +1,6 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useResource } from "react-request-hook";
 import { StateContext } from "./contexts";
-import { v4 as uuidv4 } from 'uuid';
 
 export default function CreateTodo () {
     const [ title, setTitle ] = useState("")
@@ -10,13 +9,12 @@ export default function CreateTodo () {
     const { state, dispatch } = useContext(StateContext);
     const { user } = state;
 
-    const newID = uuidv4();
-
-     const [todo, createTodo] = useResource(({ title, description, author }) => ({
-        url: "/todos",
+     const [todo, createTodo] = useResource(({ title, description }) => ({
+        url: "/post",
         method: "post",
-        data: { title, description, author, completed: false, dateCompleted: "", id: newID },
-      }));
+        headers: {"Authorization": `${state.user.access_token}`},
+        data: { title, description, completed: false, dateCompleted: "", author: user.username }
+      })); 
 
     function handleTitle (evt) { 
         setTitle(evt.target.value);
@@ -25,14 +23,28 @@ export default function CreateTodo () {
         setDescription(evt.target.value);
     }
     function handleCreate () {
-        const newTodo = { title, description, author: user, completed: false, dateCompleted: "", id: newID };
-        createTodo(newTodo);
-        dispatch({ type: "CREATE_TODO", ...newTodo });
+        const newTodo = { title, description, completed: false, dateCompleted: " ", author: user.username };
+        createTodo({title, description});
+        //dispatch({ type: "CREATE_TODO", ...newTodo });
     }
+
+    useEffect(() => {
+        if (todo.isLoading === false && todo.data) {
+            dispatch({
+                type: "CREATE_TODO",
+                title: todo.data.title,
+                description: todo.data.description,
+                author: user.username,
+                completed: todo.data.completed,
+                dateCompleted: todo.data.dateCompleted,
+                id: todo.data.id,  
+            });
+        }
+    }, [todo]);
     
     return (
         <><form onSubmit={e => { e.preventDefault(); handleCreate(); } }>
-            <div>Author: <b>{user}</b></div>
+            <div>Author: <b>{user.username}</b></div>
             <div>
                 <label htmlFor="create-title">Title: </label>
                 <input

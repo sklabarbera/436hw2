@@ -2,17 +2,23 @@ import { useState, useEffect } from "react";
 import { useResource } from "react-request-hook";
 
 export default function Register({ dispatchUser }) {
+  const [status, setStatus] = useState("");
+
   const [user, register] = useResource((username, password) => ({
-    url: "/users",
+    url: "auth/register",
     method: "post",
-    data: { email: username, password },
+    data: { username: username, password, passwordConfirmation: password },
   }));
 
   useEffect(() => {
-    if (user && user.data) {
-      dispatchUser({ type: "REGISTER", username: user.data.user.email });
+    if (user && user.isLoading === false && (user.data || user.error)) {
+      if (user.error) {
+        setStatus("Registration failed, please try again later.");
+      } else {
+        setStatus("Registration successful. You may now login.");
+      }
     }
-  }, [user, dispatchUser]);
+  }, [user]);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -32,9 +38,7 @@ export default function Register({ dispatchUser }) {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        // setUser(username);
         register(username, password);
-        dispatchUser({ type: "REGISTER", username });
       }}
     >
       <label htmlFor="register-username">Username:</label>
@@ -73,6 +77,7 @@ export default function Register({ dispatchUser }) {
           password !== passwordRepeat
         }
       />
+      {status && <p>{status}</p>}
     </form>
   );
 }

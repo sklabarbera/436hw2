@@ -12,44 +12,30 @@ import { useResource } from "react-request-hook";
 
 function App() {
 
-  /* const initialTodo = [
-    {
-      title: "Test1",
-      description: "fdskalf fdsaie ewa[jifoxjvk fdsjaoewa",
-      author: "me"
-    }, 
-    {
-      title: "Test2",
-      description: "fdska fdsahjfk dfjsaklf e4uia;fkndsoa",
-      author: "me"
-    },
-    {
-      title: "Test3",
-      description: "ieuwaiocneiowah cjewioa[nc eiewafji[vbneuoa[hf3eiwafds ds fdaiew fdiaofjwei fdjsioaf",
-      author: "me"
-    }
-  ] */
-
-     const [ todoResponse, getTodos ] = useResource(() => ({
-      url: "/todos",
-      method: "get",
-    }));
-
-    useEffect(getTodos, []);
-
-    useEffect(() => {
-      if (todoResponse && todoResponse.data) {
-        dispatch({ type: "FETCH_TODOS", todos: todoResponse.data.reverse() });
-      }
-    }, [todoResponse]); 
-
     const [ state, dispatch ] = useReducer(appReducer, {
       user: "",
       todos: [],
     });
 
     const { user, todos } = state;
+
+    const [ todoResponse, getTodos ] = useResource(() => ({
+      url: "/post",
+      method: "get",
+      headers: { Authorization: `${state?.user?.access_token}` },
+    }));
+
+    useEffect(() => {
+          getTodos();
+      }, [state?.user?.access_token]);
+
+      useEffect(() => {
+        if (todoResponse && todoResponse.isLoading === false && todoResponse.data) {
+          dispatch({ type: "FETCH_TODOS", todos: todoResponse.data.reverse() });
+        }
+      }, [todoResponse]);
       
+      console.log(todos);
 
   return (
     <div>

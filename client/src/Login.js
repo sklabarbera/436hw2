@@ -6,21 +6,27 @@ export default function Login({ dispatchUser }) {
   const [password, setPassword] = useState("");
 
   const [user, login] = useResource((username, password) => ({
-    url: "/login",
+    url: "auth/login",
     method: "post",
-    data: { email: username, password },
+    data: { username: username, password },
   }));
 
+
   useEffect(() => {
-    if (user) {
-      if (user?.data?.user) {
-        setLoginFailed(false);
-        dispatchUser({ type: "LOGIN", username: user.data.user.email });
-      } else {
+    if (user && user.isLoading === false && (user.data || user.error)) {
+      if (user.error) {
         setLoginFailed(true);
+      } else {
+        setLoginFailed(false);
+        dispatchUser({
+          type: "LOGIN",
+          username: "User",
+          access_token: user.data.access_token,
+        });
       }
     }
   }, [user]);
+    
 
   function handleUsername(evt) {
     setUsername(evt.target.value);
@@ -38,9 +44,7 @@ export default function Login({ dispatchUser }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          // setUser(username);
           login(username, password);
-          //dispatchUser({ type: "LOGIN", username });
         }}
       >
         <label htmlFor="login-username">Username:</label>
@@ -59,7 +63,6 @@ export default function Login({ dispatchUser }) {
           name="login-username"
           id="login-username"
         />
-        ;
         <input type="submit" value="Login" disabled={username.length === 0} />
       </form>
     </>
